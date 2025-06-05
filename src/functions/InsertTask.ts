@@ -1,15 +1,17 @@
-import { CosmosClient } from "@azure/cosmos";
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { container } from "../databases/CosmosDatabase";
+import { RequiredBodyParams } from "../utils/RequiredParams";
+import { SuccessResponse, ErrorResponse } from "../utils/ResponseHandler";
 
 export async function InsertTask(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-    const body = await request.json();
-
-    const client = new CosmosClient("this is a connection string");
-    const createdTask = await client.database("TaskApp")
-        .container("Tasks")
-        .items.create(body);
-
-    return { jsonBody: createdTask.resource, status: 200 };
+    context.log(`Http function processed request for url "${request.url}"`);
+    try {
+        const params = await RequiredBodyParams(request, context, ["id", "organizationId"]);
+        const { resource: task } = await container.items.create(params);
+        return SuccessResponse(task, "Task inserted successfully");
+    } catch (error: any) {
+        return ErrorResponse(context, error, "Error in InsertTask");
+    }
 };
 
 app.http('InsertTask', {

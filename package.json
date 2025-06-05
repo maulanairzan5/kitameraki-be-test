@@ -11,13 +11,17 @@
     "test": "echo \"No tests yet...\""
   },
   "dependencies": {
-    "@azure/cosmos": "^4.0.0",
-    "@azure/functions": "^4.0.0"
+    "@azure/cosmos": "^4.4.1",
+    "@azure/functions": "^4.7.2",
+    "dotenv": "^16.5.0",
+    "react": "^19.2.0-canary-37054867-20250604",
+    "react-dom": "^19.2.0-canary-37054867-20250604"
   },
   "devDependencies": {
     "@types/node": "^20.x",
     "rimraf": "^5.0.0",
-    "typescript": "^4.0.0"
+    "ts-node": "^10.9.2",
+    "typescript": "^4.9.5"
   },
   "main": "dist/src/{index.js,functions/*.js}"
 }

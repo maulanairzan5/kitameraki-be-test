@@ -1,20 +1,30 @@
-import { CosmosClient } from "@azure/cosmos";
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { container } from "../databases/CosmosDatabase";
+import { RequiredQueryParams, RequiredBodyParams } from "../utils/RequiredParams";
+import { SuccessResponse, ErrorResponse } from "../utils/ResponseHandler";
 
 export async function BulkDeleteTasks(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Http function processed request for url "${request.url}"`);
-    const body = await request.json() as string[];
-    const organizationId = request.query.get('organizationId');
-
-    const client = new CosmosClient("this is a connection string");
-    body.forEach(async element => {
-        await client.database("TaskApp")
-        .container("Tasks")
-        .item(element, organizationId)
-        .delete();
-    });
-
-    return { status: 200 };
+    try {
+        const ids = await RequiredBodyParams(request, context, ["id"]) as { id: any[] };
+        const params = RequiredQueryParams(request, context, ["organizationId"]);
+        await Promise.all(
+            ids.id.map(async (id) => {
+                try {
+                    await container.item(id, params.organizationId).delete();
+                } catch (err: any) {
+                    if (err.code === 404) {
+                        context.log(`Item with id ${id} not found, skipping delete.`);
+                    } else {
+                        throw err; 
+                    }
+                }
+            })
+        );
+        return SuccessResponse(null, "Tasks deleted successfully");
+    } catch (error: any) {
+        return ErrorResponse(context, error, "Error in BulkDeleteTask");
+    }
 };
 
 app.http('BulkDeleteTasks', {

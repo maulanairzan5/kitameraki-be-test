@@ -1,6 +1,4 @@
 import { HttpRequest, InvocationContext } from "@azure/functions";
-import { ErrorResponse } from "../utils/ResponseHandler";
-
 
 export function RequiredQueryParams(
     request: HttpRequest,

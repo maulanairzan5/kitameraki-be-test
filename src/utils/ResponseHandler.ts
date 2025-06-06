@@ -6,6 +6,7 @@ export function SuccessResponse(
     message = "Success",
     status = 200
 ): HttpResponseInit {
+    data = data || {}
     return {
         status,
         jsonBody: {
@@ -43,8 +44,6 @@ export function ErrorResponse(
             message = error.message;
         }
     }
-
-    context.error(`${logPrefix}:`, message);
     context.error(`${logPrefix}:`, error);
 
     return {

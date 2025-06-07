@@ -73,10 +73,11 @@ function BuildQuerySpec(filters: FilterParams,
 
     if (filters.search) {
         const searchableFields = ["name", "description"];
+        const searchLower = filters.search.toLowerCase(); 
         const searchConds = searchableFields.map((field, idx) => {
             const paramName = `@search${idx}`;
-            parameters.push({ name: paramName, value: filters.search });
-            return `CONTAINS(c.${field}, ${paramName})`;
+            parameters.push({ name: paramName, value: searchLower });
+            return `CONTAINS(LOWER(c.${field}), ${paramName})`;
         });
         conditions.push(`(${searchConds.join(" OR ")})`);
     }

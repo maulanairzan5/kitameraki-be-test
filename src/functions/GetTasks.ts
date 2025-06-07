@@ -14,7 +14,13 @@ export async function GetTasks(request: HttpRequest, context: InvocationContext)
         const search = request.query.get("search");
         const filters = { organizationId, status, search };
 
-        const querySpec = BuildQuerySpec(filters, "select");
+        const sortBy = request.query.get("sortBy");
+        const sortDirRaw = request.query.get("sortDir") || "asc";
+        const sortDir = sortDirRaw.toLowerCase() === "desc" ? "DESC" : "ASC";
+        const validSortKeys = ["id", "name", "status"];
+        const sortColumn = validSortKeys.includes(sortBy || "") ? sortBy : null;
+
+        const querySpec = BuildQuerySpec(filters, "select", sortColumn, sortDir);
         const countQuerySpec = BuildQuerySpec(filters, "count");
         const { resources: countResult } = await container.items.query(countQuerySpec).fetchAll();
         const totalItems = countResult[0] || 0;
@@ -46,7 +52,10 @@ interface FilterParams {
 }
 type QueryType = "select" | "count";
 
-function BuildQuerySpec(filters: FilterParams, queryType: QueryType = "select") {
+function BuildQuerySpec(filters: FilterParams,
+    queryType: QueryType = "select",
+    sortBy?: string | null,
+    sortDir: "ASC" | "DESC" = "ASC") {
     let baseQuery = queryType === "count"
         ? "SELECT VALUE COUNT(1) FROM c"
         : "SELECT * FROM c";
@@ -74,6 +83,10 @@ function BuildQuerySpec(filters: FilterParams, queryType: QueryType = "select") 
 
     if (conditions.length > 0) {
         baseQuery += " WHERE " + conditions.join(" AND ");
+    }
+
+    if (queryType === "select" && sortBy) {
+        baseQuery += ` ORDER BY c.${sortBy} ${sortDir}`;
     }
 
     return {

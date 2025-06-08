@@ -53,7 +53,8 @@ async function setup() {
                 name: "status", description: "Status", required: true, type: "Enum", value: [
                     {
                         name: "todo",
-                        description: "To Do"
+                        description: "To Do",
+                        default: true
                     },
                     {
                         name: "in-progress",
@@ -70,7 +71,8 @@ async function setup() {
                 name: "priority", description: "Priority", required: false, type: "Enum", value: [
                     {
                         name: "low",
-                        description: "Low"
+                        description: "Low",
+                        default: true
                     },
                     {
                         name: "medium",

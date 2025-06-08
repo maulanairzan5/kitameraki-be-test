@@ -1,8 +1,8 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { statusContainer } from "../../databases/task-app/task-app";
 import { SuccessResponse, ErrorResponse } from "../../utils/response-handler";
 
-export async function GetTask(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function GetTaskStatuses(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Http function processed request for url "${request.url}"`);
     try {
         const query = {
@@ -14,9 +14,3 @@ export async function GetTask(request: HttpRequest, context: InvocationContext):
         return ErrorResponse(context, error, "Error in GetTaskStatus");
     }
 }
-
-app.http("GetTask", {
-    methods: ["GET"],
-    authLevel: "anonymous",
-    handler: GetTask,
-});

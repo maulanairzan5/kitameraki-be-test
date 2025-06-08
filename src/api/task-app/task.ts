@@ -5,7 +5,7 @@ import { DeleteTask } from '../../services/task-app/delete-task';
 import { BulkDeleteTasks } from '../../services/task-app/bulk-delete-tasks';
 import { InsertTask } from '../../services/task-app/insert-task';
 import { UpdateTask } from '../../services/task-app/update-task';
-import { GetTaskStatuses } from '../../services/task-app/get-task-statuses';
+import { GetFormSetting } from '../../services/task-app/get-form-setting';
 
 
 // GET TASK
@@ -50,10 +50,10 @@ app.http('update-task', {
     handler: UpdateTask
 });
 
-
-// GET TASK STATUSES
-app.http('get-task-statuses', {
+// GET FORM SETTING
+app.http('get-task-setting', {
     methods: ["GET"],
     authLevel: "anonymous",
-    handler: GetTaskStatuses,
+    handler: GetFormSetting,
 });
+

@@ -1,6 +1,5 @@
 import { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { taskContainer } from "../../databases/task-app/task-app";
-import { RequiredQueryParams } from "../../utils/required-params";
+import { taskContainer, formSettingContainer } from "../../databases/task-app/task-app";
 import { SuccessResponse, ErrorResponse } from "../../utils/response-handler";
 import { FeedOptions } from "@azure/cosmos";
 import { EncodeContinuationToken, DecodeContinuationToken } from "../../utils/token"
@@ -16,11 +15,14 @@ export async function GetTasks(request: HttpRequest, context: InvocationContext)
         const sortBy = request.query.get("sortBy");
         const sortDirRaw = request.query.get("sortDir") || "asc";
         const sortDir = sortDirRaw.toLowerCase() === "desc" ? "DESC" : "ASC";
-        const validSortKeys = ["id", "name", "status"];
-        const sortColumn = validSortKeys.includes(sortBy || "") ? sortBy : null;
 
-        const querySpec = BuildQuerySpec(filters, "select", sortColumn, sortDir);
-        const countQuerySpec = BuildQuerySpec(filters, "count");
+        const queryFormSetting = {
+            query: "SELECT * FROM c"
+        };
+        const { resources: formSetting } = await formSettingContainer.items.query(queryFormSetting).fetchAll();
+
+        const querySpec = BuildQuerySpec(filters, "select", formSetting, sortBy, sortDir);
+        const countQuerySpec = BuildQuerySpec(filters, "count", formSetting);
         const { resources: countResult } = await taskContainer.items.query(countQuerySpec).fetchAll();
         const totalItems = countResult[0] || 0;
         const currentPage = Math.max(1, parseInt(request.query.get("page") || "1"));
@@ -53,6 +55,7 @@ type QueryType = "select" | "count";
 
 function BuildQuerySpec(filters: FilterParams,
     queryType: QueryType = "select",
+    formSetting: any,
     sortBy?: string | null,
     sortDir: "ASC" | "DESC" = "ASC") {
     let baseQuery = queryType === "count"
@@ -68,14 +71,20 @@ function BuildQuerySpec(filters: FilterParams,
     }
 
     if (filters.search) {
-        const searchableFields = ["title", "description"];
         const searchLower = filters.search.toLowerCase();
-        const searchConds = searchableFields.map((field, idx) => {
+        const searchConds: string[] = [];
+
+        formSetting[0]?.data.forEach((field: { name: any; }, idx: any) => {
+            const key = field.name;
             const paramName = `@search${idx}`;
             parameters.push({ name: paramName, value: searchLower });
-            return `CONTAINS(LOWER(c.${field}), ${paramName})`;
+            searchConds.push(`CONTAINS(LOWER(c.${key}), ${paramName})`);
         });
-        conditions.push(`(${searchConds.join(" OR ")})`);
+
+        if (searchConds.length > 0) {
+            conditions.push(`(${searchConds.join(" OR ")})`);
+        }
+
     }
 
     if (conditions.length > 0) {
@@ -85,6 +94,8 @@ function BuildQuerySpec(filters: FilterParams,
     if (queryType === "select" && sortBy) {
         baseQuery += ` ORDER BY c.${sortBy} ${sortDir}`;
     }
+
+    console.log(baseQuery);
 
     return {
         query: baseQuery,

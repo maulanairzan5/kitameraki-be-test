@@ -1,7 +1,7 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { container } from "../databases/CosmosDatabase";
-import { RequiredQueryParams } from "../utils/RequiredParams";
-import { SuccessResponse, ErrorResponse } from "../utils/ResponseHandler";
+import { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { taskContainer } from "../../databases/task-app/task-app";
+import { RequiredQueryParams } from "../../utils/required-params";
+import { SuccessResponse, ErrorResponse } from "../../utils/response-handler";
 
 export async function UpdateTask(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Http function processed request for url "${request.url}"`);
@@ -16,15 +16,9 @@ export async function UpdateTask(request: HttpRequest, context: InvocationContex
                 "value": body[key]
             });
         }
-        const { resource: task } = await container.item(params.id, params.organizationId).patch(patchRequests);
+        const { resource: task } = await taskContainer.item(params.id, params.organizationId).patch(patchRequests);
         return SuccessResponse(task, "Tasks updated successfully");
     } catch (error: any) {
         return ErrorResponse(context, error, "Error in UpdateTask");
     }
 };
-
-app.http('UpdateTask', {
-    methods: ['PATCH'],
-    authLevel: 'anonymous',
-    handler: UpdateTask
-});

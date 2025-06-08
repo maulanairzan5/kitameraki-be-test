@@ -1,7 +1,7 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { container } from "../databases/CosmosDatabase";
-import { RequiredQueryParams, RequiredBodyParams } from "../utils/RequiredParams";
-import { SuccessResponse, ErrorResponse } from "../utils/ResponseHandler";
+import { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { taskContainer } from "../../databases/task-app/task-app";
+import { RequiredQueryParams, RequiredBodyParams } from "../../utils/required-params";
+import { SuccessResponse, ErrorResponse } from "../../utils/response-handler";
 
 export async function BulkDeleteTasks(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Http function processed request for url "${request.url}"`);
@@ -14,7 +14,7 @@ export async function BulkDeleteTasks(request: HttpRequest, context: InvocationC
         await Promise.all(
             ids.id.map(async (id) => {
                 try {
-                    await container.item(id, params.organizationId).delete();
+                    await taskContainer.item(id, params.organizationId).delete();
                     countSuccessDeletedItem++;
                     deletedItem.push(id);
                 } catch (err: any) {
@@ -39,9 +39,3 @@ export async function BulkDeleteTasks(request: HttpRequest, context: InvocationC
         return ErrorResponse(context, error, "Error in BulkDeleteTask");
     }
 };
-
-app.http('BulkDeleteTasks', {
-    methods: ['DELETE'],
-    authLevel: 'anonymous',
-    handler: BulkDeleteTasks
-});

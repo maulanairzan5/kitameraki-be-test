@@ -23,5 +23,5 @@
     "ts-node": "^10.9.2",
     "typescript": "^4.9.5"
   },
-  "main": "dist/src/{index.js,functions/*.js}"
+  "main": "dist/src/{index.js,api/task-app/*.js}"
 }

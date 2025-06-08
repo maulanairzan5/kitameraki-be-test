@@ -1,10 +1,10 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { container } from "../databases/CosmosDatabase";
-import { RequiredQueryParams } from "../utils/RequiredParams";
-import { SuccessResponse, ErrorResponse } from "../utils/ResponseHandler";
+import { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { taskContainer } from "../../databases/task-app/task-app";
+import { RequiredQueryParams } from "../../utils/required-params";
+import { SuccessResponse, ErrorResponse } from "../../utils/response-handler";
 import { FeedOptions } from "@azure/cosmos";
-import { EncodeContinuationToken, DecodeContinuationToken } from "../utils/Token"
-import { CreatePageInfo } from "../utils/Pagination"
+import { EncodeContinuationToken, DecodeContinuationToken } from "../../utils/token"
+import { CreatePageInfo } from "../../utils/pagination"
 
 export async function GetTasks(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Http function processed request for url "${request.url}"`);
@@ -22,16 +22,17 @@ export async function GetTasks(request: HttpRequest, context: InvocationContext)
 
         const querySpec = BuildQuerySpec(filters, "select", sortColumn, sortDir);
         const countQuerySpec = BuildQuerySpec(filters, "count");
-        const { resources: countResult } = await container.items.query(countQuerySpec).fetchAll();
+        const { resources: countResult } = await taskContainer.items.query(countQuerySpec).fetchAll();
         const totalItems = countResult[0] || 0;
         const currentPage = Math.max(1, parseInt(request.query.get("page") || "1"));
-        const limit = parseInt(request.query.get("limit") || "10");
+        const rawLimit = parseInt(request.query.get("limit") || "10");
+        const limit = Math.max(1, Math.min(rawLimit, 50));
         const continuationToken = DecodeContinuationToken(request.query.get("continuationToken"));
         const options: FeedOptions = {
             maxItemCount: limit,
             continuationToken
         };
-        const iterator = container.items.query(querySpec, options);
+        const iterator = taskContainer.items.query(querySpec, options);
         const { resources: tasks, continuationToken: nextToken } = await iterator.fetchNext();
         const encodedToken = EncodeContinuationToken(nextToken);
         const pageInfo = CreatePageInfo(totalItems, limit, currentPage);
@@ -73,7 +74,7 @@ function BuildQuerySpec(filters: FilterParams,
 
     if (filters.search) {
         const searchableFields = ["name", "description"];
-        const searchLower = filters.search.toLowerCase(); 
+        const searchLower = filters.search.toLowerCase();
         const searchConds = searchableFields.map((field, idx) => {
             const paramName = `@search${idx}`;
             parameters.push({ name: paramName, value: searchLower });
@@ -95,9 +96,3 @@ function BuildQuerySpec(filters: FilterParams,
         parameters
     };
 }
-
-app.http('GetTasks', {
-    methods: ['GET'],
-    authLevel: 'anonymous',
-    handler: GetTasks
-});

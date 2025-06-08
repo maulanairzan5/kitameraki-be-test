@@ -6,8 +6,8 @@ import { SuccessResponse, ErrorResponse } from "../../utils/response-handler";
 export async function BulkDeleteTasks(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Http function processed request for url "${request.url}"`);
     try {
-        const ids = await RequiredBodyParams(request, context, ["id"]) as { id: any[] };
-        const params = RequiredQueryParams(request, context, ["organizationId"]);
+        const ids = await RequiredBodyParams(request, ["id"]) as { id: any[] };
+        const params = RequiredQueryParams(request, ["organizationId"]);
         let countSuccessDeletedItem = 0;
         let countFailedDeletedItem = 0;
         let deletedItem = [];

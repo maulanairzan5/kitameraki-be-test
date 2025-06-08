@@ -9,10 +9,9 @@ import { CreatePageInfo } from "../../utils/pagination"
 export async function GetTasks(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Http function processed request for url "${request.url}"`);
     try {
-        const { organizationId } = RequiredQueryParams(request, context, ["organizationId"]);
         const status = request.query.get("status");
         const search = request.query.get("search");
-        const filters = { organizationId, status, search };
+        const filters = { status, search };
 
         const sortBy = request.query.get("sortBy");
         const sortDirRaw = request.query.get("sortDir") || "asc";
@@ -47,7 +46,6 @@ export async function GetTasks(request: HttpRequest, context: InvocationContext)
 }
 
 interface FilterParams {
-    organizationId: string;
     status?: string;
     search?: string;
 }
@@ -64,16 +62,13 @@ function BuildQuerySpec(filters: FilterParams,
     const conditions: string[] = [];
     const parameters: { name: string; value: any }[] = [];
 
-    conditions.push("c.organizationId = @organizationId");
-    parameters.push({ name: "@organizationId", value: filters.organizationId });
-
     if (filters.status) {
         conditions.push("c.status = @status");
         parameters.push({ name: "@status", value: filters.status });
     }
 
     if (filters.search) {
-        const searchableFields = ["name", "description"];
+        const searchableFields = ["title", "description"];
         const searchLower = filters.search.toLowerCase();
         const searchConds = searchableFields.map((field, idx) => {
             const paramName = `@search${idx}`;

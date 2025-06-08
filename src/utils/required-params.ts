@@ -2,7 +2,6 @@ import { HttpRequest, InvocationContext } from "@azure/functions";
 
 export function RequiredQueryParams(
     request: HttpRequest,
-    context: InvocationContext,
     params: string[]
 ): Record<string, string> {
     const missing = params.filter(p => !request.query.get(p));
@@ -17,7 +16,6 @@ export function RequiredQueryParams(
 
 export async function RequiredBodyParams(
     request: HttpRequest,
-    context: InvocationContext,
     requiredFields?: string[]
 ): Promise<Record<string, any>> {
     let body: Record<string, any>;

@@ -6,7 +6,7 @@ import { SuccessResponse, ErrorResponse } from "../../utils/response-handler";
 export async function UpdateTask(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Http function processed request for url "${request.url}"`);
     try {
-        const params = RequiredQueryParams(request, context, ["id", "organizationId"]);
+        const params = RequiredQueryParams(request, ["id", "organizationId"]);
         const body = await request.json() as object;
         let patchRequests = [];
         for (let key in body) {

@@ -5,6 +5,7 @@ const client = new CosmosClient(connectionString);
 const database = client.database("TaskApp");
 const taskContainer = database.container("Tasks");
 const statusContainer = database.container("Statuses");
+const organizationContainer = database.container("Organizations");
 
 // for setup database
 if (process.env.NODE_ENV !== "PROD") {
@@ -27,16 +28,14 @@ async function setup() {
         },
     });
     const defaultStatuses = [
-        { id: "1", name: "Created" },
-        { id: "2", name: "In Progress" },
-        { id: "3", name: "Pending" },
-        { id: "4", name: "Completed" },
+        { id: "todo", name: "To Do" },
+        { id: "in-progress", name: "In Progress" },
+        { id: "completed", name: "Completed" },
     ];
-
     for (const status of defaultStatuses) {
         await statusContainer.items.upsert(status);
     }
 }
 setup().catch(console.error);
 
-export { client, database, taskContainer, statusContainer };
+export { client, database, taskContainer, statusContainer, organizationContainer };

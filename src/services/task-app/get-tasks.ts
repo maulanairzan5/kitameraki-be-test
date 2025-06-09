@@ -80,11 +80,17 @@ function BuildQuerySpec(filters: FilterParams,
         const searchLower = filters.search.toLowerCase();
         const searchConds: string[] = [];
 
-        formSetting[0]?.data.forEach((field: { name: any; }, idx: any) => {
+        formSetting[0]?.data.forEach((field: {
+            type: string; name: any;
+        }, idx: any) => {
             const key = field.name;
             const paramName = `@search${idx}`;
             parameters.push({ name: paramName, value: searchLower });
-            searchConds.push(`CONTAINS(LOWER(c.${key}), ${paramName})`);
+            if (field.type === 'Array') {
+                searchConds.push(`EXISTS(SELECT VALUE t FROM t IN c.${key} WHERE CONTAINS(LOWER(t), ${paramName}))`);
+            } else {
+                searchConds.push(`CONTAINS(LOWER(c.${key}), ${paramName})`);
+            }
         });
 
         if (searchConds.length > 0) {

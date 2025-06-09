@@ -38,12 +38,12 @@ async function setup() {
     await database.containers.createIfNotExists({
         id: "FormSetting",
         partitionKey: {
-            paths: ["/name"],
+            paths: ["/organizationId"],
         },
     });
     const defaultFormSetting = {
         id: "72f61a10-2524-11ef-8c66-8b55b44d9e5a",
-        name: "default",
+        organizationId: "a349f1e2-b52d-4085-9402-8100a6ae4333",
         data: [
             { name: "id", description: "ID", required: true, type: "String" },
             { name: "organizationId", description: "Organization ID", required: true, type: "String" },

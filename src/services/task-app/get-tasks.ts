@@ -4,13 +4,15 @@ import { SuccessResponse, ErrorResponse } from "../../utils/response-handler";
 import { FeedOptions } from "@azure/cosmos";
 import { EncodeContinuationToken, DecodeContinuationToken } from "../../utils/token"
 import { CreatePageInfo } from "../../utils/pagination"
+import { RequiredQueryParams } from "../../utils/required-params";
 
 export async function GetTasks(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Http function processed request for url "${request.url}"`);
     try {
+        const { organizationId } = RequiredQueryParams(request, ["organizationId"]);
         const status = request.query.get("status");
         const search = request.query.get("search");
-        const filters = { status, search };
+        const filters = { organizationId, status, search };
 
         const sortBy = request.query.get("sortBy");
         const sortDirRaw = request.query.get("sortDir") || "asc";
@@ -48,6 +50,7 @@ export async function GetTasks(request: HttpRequest, context: InvocationContext)
 }
 
 interface FilterParams {
+    organizationId: string;
     status?: string;
     search?: string;
 }
@@ -64,6 +67,9 @@ function BuildQuerySpec(filters: FilterParams,
 
     const conditions: string[] = [];
     const parameters: { name: string; value: any }[] = [];
+
+    conditions.push("c.organizationId = @organizationId");
+    parameters.push({ name: "@organizationId", value: filters.organizationId });
 
     if (filters.status) {
         conditions.push("c.status = @status");

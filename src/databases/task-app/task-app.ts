@@ -4,8 +4,8 @@ const connectionString = process.env.COSMOS_DB_CONNECTION_STRING!;
 const client = new CosmosClient(connectionString);
 const database = client.database("TaskApp");
 const taskContainer = database.container("Tasks");
-const statusContainer = database.container("Statuses");
 const formSettingContainer = database.container("FormSetting");
+import { v4 as uuidv4 } from "uuid";
 
 // for setup database
 if (process.env.NODE_ENV !== "PROD") {
@@ -21,20 +21,7 @@ async function setup() {
             paths: ["/organizationId"],
         },
     });
-    await database.containers.createIfNotExists({
-        id: "Statuses",
-        partitionKey: {
-            paths: ["/name"],
-        },
-    });
-    const defaultStatuses = [
-        { id: "todo", name: "To Do" },
-        { id: "in-progress", name: "In Progress" },
-        { id: "completed", name: "Completed" },
-    ];
-    for (const status of defaultStatuses) {
-        await statusContainer.items.upsert(status);
-    }
+
     await database.containers.createIfNotExists({
         id: "FormSetting",
         partitionKey: {
@@ -45,50 +32,50 @@ async function setup() {
         id: "72f61a10-2524-11ef-8c66-8b55b44d9e5a",
         organizationId: "a349f1e2-b52d-4085-9402-8100a6ae4333",
         data: [
-            { name: "id", description: "ID", required: true, type: "String" },
-            { name: "organizationId", description: "Organization ID", required: true, type: "String" },
-            { name: "title", description: "Title", required: true, type: "String" },
-            { name: "description", description: "Description", required: false, type: "String" },
+            { id: uuidv4(), description: "ID", required: true, type: "String", isVisible: false },
+            { id: uuidv4(), description: "Organization ID", required: true, type: "String", isVisible: false },
+            { id: uuidv4(), description: "Title", required: true, type: "String" },
+            { id: uuidv4(), description: "Description", required: false, type: "String" },
             {
-                name: "status", description: "Status", required: true, type: "Enum", value: [
+                id: uuidv4(), description: "Status", required: true, type: "Enum", isFilter: true, value: [
                     {
-                        name: "todo",
+                        id: uuidv4(),
                         description: "To Do",
                         default: true
                     },
                     {
-                        name: "in-progress",
+                        id: uuidv4(),
                         description: "In Progress"
                     },
                     {
-                        name: "completed",
+                        id: uuidv4(),
                         description: "Completed"
                     }
                 ]
             },
-            { name: "dueDate", description: "Due Date", required: false, type: "Datetime" },
+            { id: uuidv4(), description: "Due Date", required: false, type: "Date" },
             {
-                name: "priority", description: "Priority", required: false, type: "Enum", value: [
+                id: uuidv4(), description: "Priority", required: false, type: "Enum", value: [
                     {
-                        name: "low",
+                        id: uuidv4(),
                         description: "Low",
                         default: true
                     },
                     {
-                        name: "medium",
+                        id: uuidv4(),
                         description: "Medium"
                     },
                     {
-                        name: "high",
+                        id: uuidv4(),
                         description: "High"
                     }
                 ]
             },
-            { name: "tags", description: "Tags", required: false, type: "Array" },
+            { id: uuidv4(), description: "Tags", required: false, type: "Array" },
         ]
     }
     await formSettingContainer.items.upsert(defaultFormSetting);
 }
 setup().catch(console.error);
 
-export { client, database, taskContainer, statusContainer, formSettingContainer };
+export { client, database, taskContainer, formSettingContainer };

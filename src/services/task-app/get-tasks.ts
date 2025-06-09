@@ -10,9 +10,10 @@ export async function GetTasks(request: HttpRequest, context: InvocationContext)
     context.log(`Http function processed request for url "${request.url}"`);
     try {
         const { organizationId } = RequiredQueryParams(request, ["organizationId"]);
-        const status = request.query.get("status");
+        const filter = request.query.get("filter");
+        const filterKey = request.query.get("filterKey");
         const search = request.query.get("search");
-        const filters = { organizationId, status, search };
+        const filters = { organizationId, filter, filterKey, search };
 
         const sortBy = request.query.get("sortBy");
         const sortDirRaw = request.query.get("sortDir") || "asc";
@@ -51,7 +52,8 @@ export async function GetTasks(request: HttpRequest, context: InvocationContext)
 
 interface FilterParams {
     organizationId: string;
-    status?: string;
+    filter?: string;
+    filterKey?: string;
     search?: string;
 }
 type QueryType = "select" | "count";
@@ -71,9 +73,9 @@ function BuildQuerySpec(filters: FilterParams,
     conditions.push("c.organizationId = @organizationId");
     parameters.push({ name: "@organizationId", value: filters.organizationId });
 
-    if (filters.status) {
-        conditions.push("c.status = @status");
-        parameters.push({ name: "@status", value: filters.status });
+    if (filters.filter) {
+        conditions.push(`c["${filters.filter}"] = @filter`);
+        parameters.push({ name: "@filter", value: filters?.filterKey });
     }
 
     if (filters.search) {
@@ -81,15 +83,17 @@ function BuildQuerySpec(filters: FilterParams,
         const searchConds: string[] = [];
 
         formSetting[0]?.data.forEach((field: {
-            type: string; name: any;
+            type: string; id: any;
         }, idx: any) => {
-            const key = field.name;
+            const key = field.id;
             const paramName = `@search${idx}`;
+            console.log(paramName);
+            console.log(searchLower);
             parameters.push({ name: paramName, value: searchLower });
             if (field.type === 'Array') {
-                searchConds.push(`EXISTS(SELECT VALUE t FROM t IN c.${key} WHERE CONTAINS(LOWER(t), ${paramName}))`);
+                searchConds.push(`EXISTS(SELECT VALUE t FROM t IN c["${key}"]WHERE CONTAINS(LOWER(t), ${paramName}))`);
             } else {
-                searchConds.push(`CONTAINS(LOWER(c.${key}), ${paramName})`);
+                searchConds.push(`CONTAINS(LOWER(c["${key}"]), ${paramName})`);
             }
         });
 
@@ -104,7 +108,7 @@ function BuildQuerySpec(filters: FilterParams,
     }
 
     if (queryType === "select" && sortBy) {
-        baseQuery += ` ORDER BY c.${sortBy} ${sortDir}`;
+        baseQuery += ` ORDER BY c["${sortBy}"] ${sortDir}`;
     }
 
     console.log(baseQuery);

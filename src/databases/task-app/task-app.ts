@@ -73,7 +73,7 @@ async function setup() {
     // ]
     // for (const formSetting of defaultFormSetting) {
     //     await formSettingContainer.items.upsert(formSetting);
-    }
+    // }
 }
 setup().catch(console.error);
 

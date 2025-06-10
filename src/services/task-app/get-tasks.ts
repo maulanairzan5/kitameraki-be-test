@@ -91,7 +91,7 @@ function BuildQuerySpec(filters: FilterParams,
             const key = field.id;
             const paramName = `@search${idx}`;
             parameters.push({ name: paramName, value: searchLower });
-            if (field.type === 'Array') {
+            if (field.type.toLocaleLowerCase() === 'array') {
                 searchConds.push(`EXISTS(SELECT VALUE t FROM t IN c["${key}"]WHERE CONTAINS(LOWER(t), ${paramName}))`);
             } else {
                 searchConds.push(`CONTAINS(LOWER(c["${key}"]), ${paramName})`);

@@ -19,10 +19,13 @@ export async function GetTasks(request: HttpRequest, context: InvocationContext)
         const sortDirRaw = request.query.get("sortDir") || "asc";
         const sortDir = sortDirRaw.toLowerCase() === "desc" ? "DESC" : "ASC";
 
-        const queryFormSetting = {
-            query: "SELECT * FROM c"
+        const querySpecFormSetting = {
+            query: "SELECT * FROM c where c.organizationId = @organizationId",
+            parameters: [
+                { name: "@organizationId", value: organizationId }
+            ]
         };
-        const { resources: formSetting } = await formSettingContainer.items.query(queryFormSetting).fetchAll();
+        const { resources: formSetting } = await formSettingContainer.items.query(querySpecFormSetting).fetchAll();
 
         const querySpec = BuildQuerySpec(filters, "select", formSetting, sortBy, sortDir);
         const countQuerySpec = BuildQuerySpec(filters, "count", formSetting);
@@ -82,13 +85,11 @@ function BuildQuerySpec(filters: FilterParams,
         const searchLower = filters.search.toLowerCase();
         const searchConds: string[] = [];
 
-        formSetting[0]?.data.forEach((field: {
+        formSetting.forEach((field: {
             type: string; id: any;
         }, idx: any) => {
             const key = field.id;
             const paramName = `@search${idx}`;
-            console.log(paramName);
-            console.log(searchLower);
             parameters.push({ name: paramName, value: searchLower });
             if (field.type === 'Array') {
                 searchConds.push(`EXISTS(SELECT VALUE t FROM t IN c["${key}"]WHERE CONTAINS(LOWER(t), ${paramName}))`);

@@ -6,6 +6,7 @@ import { BulkDeleteTasks } from '../../services/task-app/bulk-delete-tasks';
 import { InsertTask } from '../../services/task-app/insert-task';
 import { UpdateTask } from '../../services/task-app/update-task';
 import { GetFormSetting } from '../../services/task-app/get-form-setting';
+import { UpdateTaskSetting } from "../../services/task-app/update-task-setting";
 
 
 // GET TASK
@@ -55,5 +56,12 @@ app.http('get-task-setting', {
     methods: ["GET"],
     authLevel: "anonymous",
     handler: GetFormSetting,
+});
+
+// UPDATE FORM SETTING
+app.http('update-task-setting', {
+    methods: ["PATCH"],
+    authLevel: "anonymous",
+    handler: UpdateTaskSetting,
 });
 

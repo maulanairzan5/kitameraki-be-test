@@ -28,53 +28,52 @@ async function setup() {
             paths: ["/organizationId"],
         },
     });
-    const defaultFormSetting = {
-        id: "72f61a10-2524-11ef-8c66-8b55b44d9e5a",
-        organizationId: "a349f1e2-b52d-4085-9402-8100a6ae4333",
-        data: [
-            { id: uuidv4(), description: "ID", required: true, type: "String", isVisible: false },
-            { id: uuidv4(), description: "Organization ID", required: true, type: "String", isVisible: false },
-            { id: uuidv4(), description: "Title", required: true, type: "String" },
-            { id: uuidv4(), description: "Description", required: false, type: "String" },
-            {
-                id: uuidv4(), description: "Status", required: true, type: "Enum", isFilter: true, value: [
-                    {
-                        id: uuidv4(),
-                        description: "To Do",
-                        default: true
-                    },
-                    {
-                        id: uuidv4(),
-                        description: "In Progress"
-                    },
-                    {
-                        id: uuidv4(),
-                        description: "Completed"
-                    }
-                ]
-            },
-            { id: uuidv4(), description: "Due Date", required: false, type: "Date" },
-            {
-                id: uuidv4(), description: "Priority", required: false, type: "Enum", value: [
-                    {
-                        id: uuidv4(),
-                        description: "Low",
-                        default: true
-                    },
-                    {
-                        id: uuidv4(),
-                        description: "Medium"
-                    },
-                    {
-                        id: uuidv4(),
-                        description: "High"
-                    }
-                ]
-            },
-            { id: uuidv4(), description: "Tags", required: false, type: "Array" },
-        ]
+    // use for first time setting
+    // const defaultFormSetting = [
+    //     { id: uuidv4(), organizationId: "a349f1e2-b52d-4085-9402-8100a6ae4333", name: "ID", required: true, type: "Text", isVisible: false, order: 1 },
+    //     { id: uuidv4(), organizationId: "a349f1e2-b52d-4085-9402-8100a6ae4333", name: "Organization ID", required: true, type: "Text", isVisible: false, order: 2 },
+    //     { id: uuidv4(), organizationId: "a349f1e2-b52d-4085-9402-8100a6ae4333", name: "Title", required: true, type: "Text", order: 3 },
+    //     { id: uuidv4(), organizationId: "a349f1e2-b52d-4085-9402-8100a6ae4333", name: "Description", required: false, type: "Text", order: 4 },
+    //     {
+    //         id: uuidv4(), organizationId: "a349f1e2-b52d-4085-9402-8100a6ae4333", name: "Status", required: true, type: "Enum", isFilter: true, order: 5, value: [
+    //             {
+    //                 id: uuidv4(),
+    //                 name: "To Do",
+    //                 default: true
+    //             },
+    //             {
+    //                 id: uuidv4(),
+    //                 name: "In Progress"
+    //             },
+    //             {
+    //                 id: uuidv4(),
+    //                 name: "Completed"
+    //             }
+    //         ]
+    //     },
+    //     { id: uuidv4(), organizationId: "a349f1e2-b52d-4085-9402-8100a6ae4333", name: "Due Date", required: false, type: "Date", order: 6 },
+    //     {
+    //         id: uuidv4(), organizationId: "a349f1e2-b52d-4085-9402-8100a6ae4333", name: "Priority", required: false, type: "Enum", order: 7, value: [
+    //             {
+    //                 id: uuidv4(),
+    //                 name: "Low",
+    //                 default: true
+    //             },
+    //             {
+    //                 id: uuidv4(),
+    //                 name: "Medium"
+    //             },
+    //             {
+    //                 id: uuidv4(),
+    //                 name: "High"
+    //             }
+    //         ]
+    //     },
+    //     { id: uuidv4(), organizationId: "a349f1e2-b52d-4085-9402-8100a6ae4333", name: "Tags", required: false, type: "Array", order: 8 },
+    // ]
+    // for (const formSetting of defaultFormSetting) {
+    //     await formSettingContainer.items.upsert(formSetting);
     }
-    await formSettingContainer.items.upsert(defaultFormSetting);
 }
 setup().catch(console.error);
 
